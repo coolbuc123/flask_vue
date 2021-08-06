@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no" 
+    />
+
+    <!-- Bootstrap CSS -->
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
+      integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk"
+      crossorigin="anonymous"
+    />
+
+    <title>Hello, world!</title>
+  </head>
+  <body>
+    <div id="app">
+	 
+
+
+
+      <br/>
+      <caption> ■ 전략별 수익률 성과 현황 </caption> 
+	  <br />
+	  
+	  <div align='left'>
+	  <select v-model="selected" @change="test_post()"> <!--자동 바인딩-->
+		<option v-for="(d, i) in date['date']" :key="i">{{ date['date'][i] }}</option>
+	  </select>
+	  </div>
+	
+	  <div>
+	  <p align='center' v-if="received == false">수익률 조회 중... </p>
+	  <p align='center' v-else-if="this.result === '성공'"></p>
+	  <p align='center' v-else> {{ result }} </p>
+      </div>
+
+
+	  
+
+	  <!-- <span>선택함: {{ selected }}</span> -->
+      <table class="table table-striped table-hover">  <!-- class=table-secondary -->
+        
+        <thead>
+          <tr>
+            <th scope="col">IDX</th>
+            <th scope="col">전략코드</th>
+            <th scope="col" >ACTIVATE</th>
+            <th scope="col">1D</th>
+            <th scope="col">1W</th>
+            <th scope="col">2W</th>
+            <th scope="col">1M</th>
+            <th scope="col">3M</th>
+            <th scope="col">6M</th>
+            <th scope="col">1Y</th>
+            <th scope="col">CUM</th>
+            <th scope="col">HIT</th> 
+            <th scope="col">VOL</th>
+
+          </tr>
+        </thead>
+
+        <tbody v-if="received">
+          <tr v-for="(stg, i) in drv['str_code']" :key="i">
+            <th scope="row">{{ i }}</th>
+            <td>{{ drv['str_code'][i] }}</td>
+            <td >{{drv['activate'][i]}}</td>
+            <td>{{ drv['1d'][i] }}%</td>
+            <td>{{ drv['1w'][i] }}%</td>
+            <td>{{ drv['2w'][i] }}%</td>
+            <td>{{ drv['1m'][i] }}%</td>
+            <td>{{ drv['3m'][i] }}%</td>
+            <td>{{ drv['6m'][i] }}%</td>
+			<td>{{ drv['1y'][i] }}%</td>
+			<td>{{ drv['cum'][i] }}%</td>
+			<td>{{ drv['hit'][i] }}%</td>  
+			<td>{{ drv['vol'][i] }}%</td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <!--{{ strategy }} <br>-->
+      <!--{{ day }}-->
+      
+      
+      <div align="right">
+        <button type="button" class="btn btn-secondary" v-on:click="test_post()">
+          refresh
+        </button>
+      </div>
+
+    </div>
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script
+      src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+      integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+      integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"
+      integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI"
+      crossorigin="anonymous"
+    ></script>
+
+    <!-- Vue Start -->
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+    
+    <script>
+      const app = new Vue({
+        el: "#app",
+        
+        data() {
+                return {
+    				  drv : '',
+    				  date : '',
+    				  selected: '0000-00-00',
+    				  received : false,
+					  result : ''
+    				  }
+            },
+    
+			created : function(){   //(+before)created, mounted, updated, unmounted    
+					console.log('created');
+					this.test_post(); // 최초도 post와 동일한 액션
+				},
+    
+        methods : {
+          test_post: function() {
+			  this.received = false;
+           axios.post("http://10.17.126.123:8082/test", {
+    			  selected : this.selected,
+    			  received : this.received
+            })
+            .then(response => {
+              console.log(response.data);
+				  this.result = response.data['msg'];
+				  this.received = true;
+				  this.selected = response.data['sel_date'];
+				  this.date = response.data['date'];
+				  
+				  if (this.result === '성공')
+				  {
+					this.drv = response.data['data'];
+				  }
+				  else{
+					this.drv = {}
+				  }
+            }) 
+          },	 
+	
+        },
+    
+        //forceRerender() {
+          // Remove my-component from the DOM
+          //this.renderComponent = false;
+    
+          // If you like promises better you can
+          // also use nextTick this way
+         // this.$nextTick().then(() => {
+            // Add the component back in
+         //   this.renderComponent = true;
+         // });
+        //}
+      });
+    
+    	  //app.use(Dropdown);
+    
+    </script>
+  </body>
+</html>
+
