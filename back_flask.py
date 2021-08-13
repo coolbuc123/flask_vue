@@ -63,7 +63,7 @@ def py_logic(post_data):
             'sel_date':selected_date 
         }
         
-    rt = json.dumps(total) # dic → json ※ json → dic >>> json.loads(js)                
+    rt = json.dumps(total) # dic → json (참고)json → dic >>> json.loads(js)                
     return rt
 
 
